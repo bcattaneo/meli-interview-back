@@ -2,6 +2,8 @@ package com.meli.interview.back.subscription_api.configuration;
 
 import com.meli.interview.back.subscription_api.subscription.Subscription;
 import com.meli.interview.back.subscription_api.subscription.SubscriptionRepository;
+import com.meli.interview.back.subscription_api.user.User;
+import com.meli.interview.back.subscription_api.user.UserRepository;
 import java.util.Set;
 import lombok.AllArgsConstructor;
 import org.springframework.boot.CommandLineRunner;
@@ -14,6 +16,7 @@ import org.springframework.stereotype.Component;
 public class PostgreSqlRunner implements CommandLineRunner {
 
   private SubscriptionRepository subscriptionRepository;
+  private UserRepository userRepository;
 
   @Override
   public void run(String... args) throws Exception {
@@ -24,5 +27,9 @@ public class PostgreSqlRunner implements CommandLineRunner {
             new Subscription("netflix", 200F),
             new Subscription("spotify", 50F));
     subscriptionRepository.saveAll(subscriptions);
+
+    // Add users
+    var users = Set.of(new User("bcattaneo", "Bruno Cattáneo"));
+    userRepository.saveAll(users);
   }
 }
