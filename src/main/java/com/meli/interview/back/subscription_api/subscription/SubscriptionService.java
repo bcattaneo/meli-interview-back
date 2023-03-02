@@ -5,8 +5,14 @@ import com.meli.interview.back.subscription_api.session.User;
 import com.meli.interview.back.subscription_api.session.UserSession;
 
 import java.util.ArrayList;
+import lombok.AllArgsConstructor;
+import org.springframework.stereotype.Component;
 
+@Component
+@AllArgsConstructor
 public class SubscriptionService {
+
+  private SubscriptionRepository subscriptionRepository;
 
   /**
    * Devuelve el costo total de las suscripciones de un usuario siempre que el usuario que esté
@@ -17,31 +23,32 @@ public class SubscriptionService {
    * @throws UserNotLoggedInException si no hay un usuario logueado
    */
   public Float getUserSubscriptionsCost(User user) throws UserNotLoggedInException {
-    ArrayList<Subscription> subscriptionList = new ArrayList<Subscription>();
+    var maybeLoggedUser = UserSession.getInstance().getLoggedUser();
 
-    // get logged user
-    User loggedUser = UserSession.getInstance().getLoggedUser();
-    boolean isFriend = false;
-    if (loggedUser != null) {
-      for (User friend : user.getFriends()) {
-        if (friend == loggedUser) {
-          isFriend = true;
-          break;
+    if (maybeLoggedUser.isEmpty()) {
+      throw new UserNotLoggedInException();
+    } else {
+      var loggedUser = maybeLoggedUser.get();
+
+      // Check current logged-in is in received user's friend list
+      // TODO: define "equals" in User's model and just use List.contains?
+      boolean isFriend =
+          user.getFriends().stream().anyMatch(friend -> friend.getId().equals(loggedUser.getId()));
+      //      user.getFriends().contains(loggedUser);
+
+      if (isFriend) {
+        // TODO: just get subscription list from entity and delete this
+        var maybeSubscriptionList = subscriptionRepository.findSubscriptionByUserId(user.getId());
+
+        // Sum of prices
+        if (maybeSubscriptionList.isPresent()) {
+          return maybeSubscriptionList.get().stream()
+              .map(s -> s.getPrice())
+              .reduce(0F, (x, y) -> x + y);
         }
       }
-      if (isFriend) {
-        subscriptionList = SubscriptionDAO.findSubscriptionByUser(user);
-      }
 
-      float totalPrice = 0;
-
-      for (Subscription subscription : subscriptionList) {
-        totalPrice += subscription.getPrice();
-      }
-
-      return totalPrice;
-    } else {
-      throw new UserNotLoggedInException();
+      return 0F;
     }
   }
 }
