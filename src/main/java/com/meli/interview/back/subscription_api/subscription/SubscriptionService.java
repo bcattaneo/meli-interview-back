@@ -3,9 +3,10 @@ package com.meli.interview.back.subscription_api.subscription;
 import com.meli.interview.back.subscription_api.exception.SubscriptionAlreadyExistsException;
 import com.meli.interview.back.subscription_api.exception.SubscriptionNotFoundException;
 import com.meli.interview.back.subscription_api.exception.UserNotLoggedInException;
-import com.meli.interview.back.subscription_api.session.User;
+import com.meli.interview.back.subscription_api.user.User;
 import com.meli.interview.back.subscription_api.session.UserSession;
 
+import com.meli.interview.back.subscription_api.user.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import javax.transaction.Transactional;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Component;
 public class SubscriptionService {
 
   private SubscriptionRepository subscriptionRepository;
+  private UserRepository userRepository;
+  private UserSession userSession;
 
   public List<Subscription> getSubscriptions() {
     return subscriptionRepository.findAll();
@@ -56,38 +59,39 @@ public class SubscriptionService {
    * Devuelve el costo total de las suscripciones de un usuario siempre que el usuario que esté
    * logueado se encuentre en su lista de amigos
    *
-   * @param user
+   * @param username
    * @return costo total de la suscripciones del user
    * @throws UserNotLoggedInException si no hay un usuario logueado
    */
-  public Float getUserSubscriptionsCost(User user) throws UserNotLoggedInException {
-    var maybeLoggedUser = UserSession.getInstance().getLoggedUser();
+  public Float getUserSubscriptionsCost(String username) throws UserNotLoggedInException {
+    var loggedUser = userSession.getUser();
 
-    if (maybeLoggedUser.isEmpty()) {
-      throw new UserNotLoggedInException();
-    } else {
-      var loggedUser = maybeLoggedUser.get();
-
-      // Check current logged-in is in received user's friend list
-      // TODO: define "equals" in User's model and just use List.contains?
-      boolean isFriend =
-          user.getFriends().stream().anyMatch(friend -> friend.getId().equals(loggedUser.getId()));
-      //      user.getFriends().contains(loggedUser);
-
-      if (isFriend) {
-        // TODO: just get subscription list from entity and delete this
-        //        var maybeSubscriptionList =
-        // subscriptionRepository.findSubscriptionByUserId(user.getId());
-        //
-        //        // Sum of prices
-        //        if (maybeSubscriptionList.isPresent()) {
-        //          return maybeSubscriptionList.get().stream()
-        //              .map(s -> s.getPrice())
-        //              .reduce(0F, (x, y) -> x + y);
-        //        }
-      }
-
-      return 0F;
+    // When it's just me, return my cost sum
+    if (loggedUser.getUsername().equals(username)) {
+      return loggedUser.getSubscriptions().stream()
+          .map(s -> s.getPrice())
+          .reduce(0F, (x, y) -> x + y);
     }
+
+    // Get target user
+    var maybeUser = userRepository.findByUsername(username);
+    if (!maybeUser.isPresent()) {
+      throw new SubscriptionNotFoundException("Target user not found");
+    }
+
+    var user = maybeUser.get();
+
+    // TODO: define "equals" in User's model and just use List.contains?
+    boolean isFriend =
+        user.getFriends().stream().anyMatch(friend -> friend.getId().equals(loggedUser.getId()));
+
+    if (isFriend) {
+      return user.getSubscriptions().stream()
+          .map(s -> s.getPrice())
+          .reduce(0F, (x, y) -> x + y)
+          .floatValue();
+    }
+
+    return 0F;
   }
 }

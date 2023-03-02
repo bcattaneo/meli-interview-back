@@ -3,8 +3,10 @@ package com.meli.interview.back.subscription_api.user;
 import com.meli.interview.back.subscription_api.exception.SubscriptionAlreadyExistsException;
 import com.meli.interview.back.subscription_api.exception.SubscriptionNotFoundException;
 import com.meli.interview.back.subscription_api.exception.UserAlreadyExistsException;
+import com.meli.interview.back.subscription_api.exception.UserInvalidCredentialsException;
 import com.meli.interview.back.subscription_api.exception.UserNotFoundException;
 import com.meli.interview.back.subscription_api.exception.UserNotLoggedInException;
+import com.meli.interview.back.subscription_api.session.UserSession;
 import com.meli.interview.back.subscription_api.user.User;
 import com.meli.interview.back.subscription_api.subscription.Subscription;
 import java.util.List;
@@ -49,6 +51,20 @@ public class UserService {
       user.setName(userUpdate.getName());
       System.out.println(userUpdate.getSubscriptions());
       user.setSubscriptions(userUpdate.getSubscriptions());
+    }
+  }
+
+  public void userLogin(String username, String password) {
+    var maybeUser = userRepository.findByUsername(username);
+    if (!maybeUser.isPresent()) {
+      // Note: returning little descriptive information on purpose
+      throw new UserInvalidCredentialsException("Invalid credentials");
+    } else {
+      var user = maybeUser.get();
+      // TODO: here match a hashed password with Pbkdf2 or something else
+      if (!user.getPassword().equals(password)) {
+        throw new UserInvalidCredentialsException("Invalid credentials");
+      }
     }
   }
 }

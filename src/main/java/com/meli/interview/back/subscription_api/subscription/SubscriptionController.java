@@ -23,6 +23,13 @@ public class SubscriptionController {
     return ResponseEntity.ok().body(subscriptionService.getSubscriptions());
   }
 
+  @GetMapping("getUserSubscriptionsCost")
+  public ResponseEntity<SubscriptionCostResponse> getUseSubscriptionsCost(
+      @RequestParam String username) {
+    var cost = subscriptionService.getUserSubscriptionsCost(username);
+    return ResponseEntity.ok().body(new SubscriptionCostResponse(username, cost));
+  }
+
   @PostMapping
   public void addNewSubscription(@RequestBody Subscription subscription) {
     subscriptionService.addNewSubscription(subscription);

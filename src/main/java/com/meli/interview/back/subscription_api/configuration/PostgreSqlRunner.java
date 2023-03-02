@@ -29,7 +29,10 @@ public class PostgreSqlRunner implements CommandLineRunner {
     subscriptionRepository.saveAll(subscriptions);
 
     // Add users
-    var users = Set.of(new User("bcattaneo", "Bruno Cattáneo"));
+    var users =
+        Set.of(
+            new User("bcattaneo", "1234", "Bruno Cattáneo"),
+            new User("fperez", "1234", "Fernanda Pérez"));
     userRepository.saveAll(users);
   }
 }
