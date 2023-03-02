@@ -8,9 +8,5 @@ import org.springframework.stereotype.Repository;
 
 @Repository
 public interface SubscriptionRepository extends JpaRepository<Subscription, Long> {
-
-  //  @Query("SELECT s FROM Subscription s WHERE s.name = ?1")
-  //  Optional<List<Subscription>> findSubscriptionByUserId(String userId);
-
   Optional<Subscription> findSubscriptionByPartner(String partner);
 }
