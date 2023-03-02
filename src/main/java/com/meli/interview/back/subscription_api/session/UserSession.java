@@ -4,18 +4,18 @@ import com.meli.interview.back.subscription_api.exception.CollaboratorCallExcept
 
 public class UserSession {
 
-    private static final UserSession userSession = new UserSession();
+  private static final UserSession userSession = new UserSession();
 
-    private UserSession() {
-    }
+  private UserSession() {
+  }
 
-    public static UserSession getInstance() {
-        return userSession;
-    }
+  public static UserSession getInstance() {
+    return userSession;
+  }
 
-    public User getLoggedUser() {
-        throw new CollaboratorCallException(
-            "UserSession.getLoggedUser() should not be called in an unit test");
-    }
+  public User getLoggedUser() {
+    throw new CollaboratorCallException(
+        "UserSession.getLoggedUser() should not be called in an unit test");
+  }
 
 }
