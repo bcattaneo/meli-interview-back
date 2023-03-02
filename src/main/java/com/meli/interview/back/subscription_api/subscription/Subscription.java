@@ -31,28 +31,11 @@ public class Subscription {
   @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "subscription_sequence")
   private Long id;
 
+  @Column(unique = true, nullable = false)
   @NonNull
-  @Column(unique = true)
   private String partner;
 
-  @NonNull private Float price;
-
-  //  public float getPrice() {
-  //    float price = 0;
-  //    if (partner.equals("disney")) {
-  //      price = 100;
-  //    }
-  //
-  //    if (partner.equals("netflix")) {
-  //      price = 200;
-  //    }
-  //
-  //    if (partner.equals("spotify")) {
-  //      price = 50;
-  //    } else {
-  //      price = 0;
-  //    }
-  //
-  //    return price;
-  //  }
+  @Column(nullable = false)
+  @NonNull
+  private Float price;
 }
